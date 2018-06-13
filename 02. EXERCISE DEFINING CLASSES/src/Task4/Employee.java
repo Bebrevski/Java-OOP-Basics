@@ -1,3 +1,5 @@
+package Task4;
+
 class Employee {
     private String Name;
     private double Salary;
