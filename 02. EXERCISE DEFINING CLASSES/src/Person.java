@@ -37,4 +37,10 @@ class Person {
                 , this.getName()
                 , this.getAge());
     }
+
+    public String printMethodForOpinionPollTask() {
+        return String.format("%s - %d"
+                , this.getName()
+                , this.getAge());
+    }
 }
