@@ -7,14 +7,15 @@ public class Bus extends BusAbstract {
     }
 
     @Override
-    public void driveEmpty(double distance){
+    public void driveEmpty(double distance) {
         double fuelNeeded = this.getFuelConsumation() * distance;
         if (fuelNeeded > this.getFuelQuantity()) {
             throw new IllegalArgumentException(Constants.BUS_NEEDS_REFUELING);
         }
 
-        this.setFuelQuantity(this.getFuelQuantity() - fuelNeeded);
+        super.setFuelQuantity(super.getFuelQuantity() - fuelNeeded);
     }
+
 
     @Override
     public void drive(double distance) {
@@ -23,7 +24,7 @@ public class Bus extends BusAbstract {
             throw new IllegalArgumentException(Constants.BUS_NEEDS_REFUELING);
         }
 
-        this.setFuelQuantity(super.getFuelQuantity() - fuelNeeded);
+        super.setFuelQuantity(super.getFuelQuantity() - fuelNeeded);
     }
 
     @Override

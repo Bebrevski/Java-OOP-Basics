@@ -27,7 +27,7 @@ public class Main {
 
         Vehicle car = new Car(carFuelQuantity, carCuelConsumation, carTankCapacity);
         Vehicle truck = new Truck(truckFuelQuantity, truckFuelConsumation, truckTankCapacity);
-        Vehicle bus = new Bus(busFuelQuantity, busFuelConsumation, busTankCapacity);
+        BusAbstract bus = new Bus(busFuelQuantity, busFuelConsumation, busTankCapacity);
 
         int lines = Integer.parseInt(reader.readLine());
         for (int i = 0; i < lines; i++) {
@@ -63,7 +63,7 @@ public class Main {
                 return String.format("%s travelled %s km", vehicle, Constants.FORMAT.format(distance));
             case "DriveEmpty":
                 distance = Double.parseDouble(tokens[2]);
-                ((Bus) bus).driveEmpty(distance);
+                ((BusAbstract) bus).driveEmpty(distance);
                 return String.format("%s travelled %s km", vehicle, Constants.FORMAT.format(distance));
             case "Refuel":
                 double liters = Double.parseDouble(tokens[2]);
