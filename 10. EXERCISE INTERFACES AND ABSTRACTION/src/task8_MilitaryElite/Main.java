@@ -1,143 +1,125 @@
-package task8_MilitaryElite;
+package military_elit;
+
+import military_elit.contracts.Mission;
+import military_elit.contracts.Private;
+import military_elit.contracts.Repair;
+import military_elit.contracts.Soldier;
+import military_elit.impl.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
-
-    private static final String END_OF_LINES = "End";
-
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        List<Soldier> record = new ArrayList<>();
+        Map<String, Soldier> soldiers = new LinkedHashMap<>();
+        Map<String, Private> privates = new HashMap<>();
 
-        String input;
-        while (!END_OF_LINES.equals(input = reader.readLine())) {
-            String[] tokens = input.split("\\s+");
-            String typeOfSoldier = tokens[0];
-
-            switch (typeOfSoldier) {
-                case "Private": {
-                    String id = tokens[1];
-                    String firstName = tokens[2];
-                    String lastName = tokens[3];
-                    Double salary = Double.parseDouble(tokens[4]);
-
-                    Private person = new Private(id, firstName, lastName, salary);
-                    record.add(person);
-                }
+        String line;
+        while (true) {
+            if ("End".equals(line = reader.readLine())) {
                 break;
+            }
 
-                case "Spy": {
-                    String id = tokens[1];
-                    String firstName = tokens[2];
-                    String lastName = tokens[3];
+            String[] tokens = line.split("\\s+");
+
+            String soldierType = tokens[0];
+            String id = tokens[1];
+            String firstName = tokens[2];
+            String lastName = tokens[3];
+            double salary;
+
+            Soldier soldier = null;
+            switch (soldierType) {
+                case "Private":
+                    salary = Double.parseDouble(tokens[4]);
+                    Private privateSoldier = new PrivateImpl(id, firstName, lastName, salary);
+                    soldiers.put(id, privateSoldier);
+                    privates.put(id, privateSoldier);
+                    break;
+                case "LeutenantGeneral":
+                    salary = Double.parseDouble(tokens[4]);
+                    List<String> privatesIds = Arrays.stream(tokens).skip(5).collect(Collectors.toList());
+                    Set<Private> privatesSet = getPrivates(privatesIds, privates);
+                    soldier = new LeutenantGeneralImpl(id, firstName, lastName, salary, privatesSet);
+                    break;
+                case "Engineer":
+                    try {
+                        salary = Double.parseDouble(tokens[4]);
+                        String corps = tokens[5];
+                        String[] repairsTokens = Arrays.stream(tokens).skip(6).toArray(String[]::new);
+                        Set<Repair> repairs = createRepairs(repairsTokens);
+                        soldier = new EngineerImpl(id, firstName, lastName, salary, corps, repairs);
+                    } catch (IllegalArgumentException ignored) {
+                        ;
+                    }
+                    break;
+                case "Commando":
+                    salary = Double.parseDouble(tokens[4]);
+                    String corps = tokens[5];
+                    String[] missionsTokens = Arrays.stream(tokens).skip(6).toArray(String[]::new);
+                    Set<Mission> missions = createMissions(missionsTokens);
+                    soldier = new CommandoImpl(id, firstName, lastName, salary, corps, missions);
+                    break;
+                case "Spy":
                     String codeNumber = tokens[4];
+                    soldier = new SpyImpl(id, firstName, lastName, codeNumber);
+                    break;
+            }
 
-                    Spy person = new Spy(id, firstName, lastName, codeNumber);
-                    record.add(person);
-                }
-                break;
-
-                case "LeutenantGeneral": {
-                    String id = tokens[1];
-                    String firstName = tokens[2];
-                    String lastName = tokens[3];
-                    double salary = Double.parseDouble(tokens[4]);
-
-                    if (tokens.length < 6) {
-                        LeutenantGeneral leutenantGeneral = new LeutenantGeneral(id, firstName, lastName, salary);
-                        record.add(leutenantGeneral);
-                        continue;
-                    }
-                    String[] privates = Arrays.copyOfRange(tokens, 5, tokens.length);
-
-                    LeutenantGeneral leutenantGeneral = new LeutenantGeneral(id, firstName, lastName, salary);
-                    for (String p : privates) {
-                        for (Soldier s : record) {
-                            if (p.equals(s.getId())) {
-                                leutenantGeneral.setPrivates((Private) s);
-                            }
-                        }
-                    }
-
-                    record.add(leutenantGeneral);
-                }
-                break;
-
-                case "Engineer": {
-                    String id = tokens[1];
-                    String firstName = tokens[2];
-                    String lastName = tokens[3];
-                    double salary = Double.parseDouble(tokens[4]);
-                    String coprs = tokens[5];
-
-                    if (tokens.length < 7) {
-                        Engineer eng = new Engineer(id, firstName, lastName, salary, coprs);
-                        record.add(eng);
-                        continue;
-                    }
-
-                    String[] repairs = Arrays.copyOfRange(tokens, 6, tokens.length);
-
-                    Engineer eng = new Engineer(id, firstName, lastName, salary, coprs);
-
-                    String repair;
-                    int workingHours;
-                    for (int i = 0; i < repairs.length; i += 2) {
-                        repair = repairs[i];
-                        workingHours = Integer.parseInt(repairs[i + 1]);
-
-                        Repair rep = new Repair(repair, workingHours);
-                        eng.setRepairs(rep);
-                    }
-
-                    record.add(eng);
-                }
-                break;
-
-                case "Commando": {
-                    String id = tokens[1];
-                    String firstName = tokens[2];
-                    String lastName = tokens[3];
-                    double salary = Double.parseDouble(tokens[4]);
-                    String coprs = tokens[5];
-
-                    if (tokens.length < 7) {
-                        Commando com = new Commando(id, firstName, lastName, salary, coprs);
-                        record.add(com);
-                        continue;
-                    }
-
-                    String[] missions = Arrays.copyOfRange(tokens, 6, tokens.length);
-
-                    Commando com = new Commando(id, firstName, lastName, salary, coprs);
-
-                    String mission;
-                    String state;
-                    for (int i = 0; i < missions.length; i += 2) {
-                        mission = missions[i];
-                        state = missions[i + 1];
-
-                        Mission miss = new Mission(mission, state);
-                        com.completeMission(miss);
-                        com.setMissions(miss);
-                    }
-
-                    record.add(com);
-                }
-                break;
+            if (soldier != null) {
+                soldiers.put(id, soldier);
             }
         }
 
-        for (Soldier soldier : record) {
-            System.out.println(soldier);
+        soldiers.values().forEach(s -> System.out.println(s.toString()));
+    }
+
+    private static Set<Mission> createMissions(String[] missionsTokens) {
+
+        Set<Mission> missions = new LinkedHashSet<>();
+
+        Mission mission;
+        for (int i = 0; i < missionsTokens.length; i += 2) {
+            String codeName = missionsTokens[i];
+            String state = missionsTokens[i + 1];
+
+            try {
+                mission = new MissionImpl(codeName, state);
+                missions.add(mission);
+            } catch (IllegalArgumentException ignored) {
+                ;
+            }
         }
+
+        return missions;
+    }
+
+    private static Set<Repair> createRepairs(String[] repairsTokens) {
+
+        Set<Repair> repairs = new LinkedHashSet<>();
+
+        for (int i = 0; i < repairsTokens.length; i += 2) {
+            String partName = repairsTokens[i];
+            int hoursWork = Integer.parseInt(repairsTokens[i + 1]);
+
+            Repair repair = new RepairImpl(partName, hoursWork);
+
+            repairs.add(repair);
+        }
+
+        return repairs;
+    }
+
+    private static Set<Private> getPrivates(List<String> privatesIds, Map<String, Private> privates) {
+        return privates
+                .values()
+                .stream()
+                .filter(p -> privatesIds.contains(p.getId()))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }
-
